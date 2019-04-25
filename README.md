@@ -14,7 +14,7 @@ my spiders dont crawl facebook as fast as possible and overload the server with 
 the spiders are not fully done yet, here's my to do list, i will include detailed tasks that i want to do, the problems that i might/will encounter in order to do these tasks and eventually a solution to these tasks (this is an educational project afterall) :
 THIS LIST WILL GROW AS I ENCOUNTER PROBLEMS OR NEED TO ADD FEATURES IN MY CRAWLER
 
-##TO DO LIST :
+## TO DO LIST :
 
 1)to do :collect all the spiders in one giant spider instead of diving it to smaller spiders(starting from a page url, the spider will collect all posts made on that page, collect all the reactions and comments made on that post, naviguate and collect information provided by the users that made these comments and reactions on the said post, do the same thing for groups)
 
