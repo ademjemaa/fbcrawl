@@ -1,0 +1,23 @@
+
+
+
+scrapy crawl fb -a email="" -a password="" -a page="" -a year="2015" -a lang="en" -o posts.csv
+
+scrapy crawl comments -a email="" -a password="" -a page="" -o comments.csv
+
+scrapy crawl reactions -a email="" -a password="" -a page="" -o reactions.csv
+
+scrapy crawl group -a email="" -a password="" -a page="" -a year="2015" -a lang="en" -o groups.csv 
+
+scrapy crawl profile -a email="" -a password="" -a page="" -o profile.csv 
+
+
+
+avec page = url a passer (example = -a page="https://mbasic.facebook.com/mosaiquefm")
+
+
+            
+
+    
+
+
