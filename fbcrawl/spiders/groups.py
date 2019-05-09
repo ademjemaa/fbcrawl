@@ -51,7 +51,7 @@ class GroupPosts(FacebookSpider):
                 
     def parse_post(self,response):
         new = ItemLoader(item=FbcrawlItem(),response=response,parent=response.meta['item'])
-        new.add_xpath('source', "substring-before(.//div[1]/div/div/div/table//strong[1]/a[1]/@href,'?')")
+        new.add_xpath('source', "substring-before(.//div[1]/div/div/div/table//strong[1]/a[1]/@href, concat(substring('&', 1 div contains(.//div[1]/div/div/div/table//strong[1]/a[1]/@href, 'profile.php')), substring('?', 1 div not(contains(.//div[1]/div/div/div/table//strong[1]/a[1]/@href, 'profile.php')))))")
         new.add_xpath('shared_from','//div[contains(@data-ft,"top_level_post_id") and contains(@data-ft,\'"isShare":1\')]/div/div[3]//strong/a/text()')
         new.add_xpath('date','//div/div/abbr/text()')
         new.add_xpath('text','//div[@data-ft]//p//text() | //div[@data-ft]/div[@class]/div[@class]/text()')

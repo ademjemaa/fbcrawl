@@ -29,7 +29,7 @@ class CommentsSpider(FacebookSpider):
         #loads replied-to comments pages
         path = './/div[string-length(@class) = 2 and count(@id)=1 and contains("0123456789", substring(@id,1,1)) and .//div[contains(@id,"comment_replies")]]'  + '['+ str(response.meta['index']) + ']'
         for reply in response.xpath(path):
-            source = reply.xpath("substring-before(.//h3/a/@href,'?')").extract()
+            source = reply.xpath("substring-before(.//h3/a/@href, concat(substring('&', 1 div contains(.//h3/a/@href, 'profile.php')), substring('?', 1 div not(contains(.//h3/a/@href, 'profile.php')))))").extract()
             answer = reply.xpath('.//a[contains(@href,"repl")]/@href').extract()
             ans = response.urljoin(answer[::-1][0])
             self.logger.info('{} nested comment @ page {}'.format(str(response.meta['index']),ans))
@@ -45,8 +45,8 @@ class CommentsSpider(FacebookSpider):
             for i,reply in enumerate(response.xpath(path2)):
                 self.logger.info('{} regular comment @ page {}'.format(i,response.url))
                 new = ItemLoader(item=CommentsItem(),selector=reply)
-                new.context['lang'] = self.lang           
-                new.add_xpath('source',"substring-before(.//h3/a/@href,'?')")  
+                new.context['lang'] = self.lang
+                new.add_xpath('source',"substring-before(.//h3/a/@href, concat(substring('&', 1 div contains(.//h3/a/@href, 'profile.php')), substring('?', 1 div not(contains(.//h3/a/@href, 'profile.php')))))")  
                 new.add_xpath('text','.//div[h3]/div[1]//text()')
                 new.add_xpath('date','.//abbr/text()')
                 new.add_xpath('reactions','.//a[contains(@href,"reaction/profile")]//text()')
@@ -71,8 +71,8 @@ class CommentsSpider(FacebookSpider):
             #parse root comment
             for root in response.xpath('//div[contains(@id,"root")]/div/div/div[count(@id)!=1 and contains("0123456789", substring(@id,1,1))]'): 
                 new = ItemLoader(item=CommentsItem(),selector=root)
-                new.context['lang'] = self.lang           
-                new.add_xpath('source', "substring-before(.//h3/a/@href,'?')")
+                new.context['lang'] = self.lang
+                new.add_xpath('source', "substring-before(.//h3/a/@href, concat(substring('&', 1 div contains(.//h3/a/@href, 'profile.php')), substring('?', 1 div not(contains(.//h3/a/@href, 'profile.php')))))")
                 new.add_value('reply_to','ROOT')
                 new.add_xpath('text','.//div[1]//text()')
                 new.add_xpath('date','.//abbr/text()')
@@ -82,8 +82,8 @@ class CommentsSpider(FacebookSpider):
             #parse all replies in the page
             for reply in response.xpath('//div[contains(@id,"root")]/div/div/div[count(@id)=1 and contains("0123456789", substring(@id,1,1))]'): 
                 new = ItemLoader(item=CommentsItem(),selector=reply)
-                new.context['lang'] = self.lang           
-                new.add_xpath('source', "substring-before(.//h3/a/@href,'?')")
+                new.context['lang'] = self.lang
+                new.add_xpath('source', "substring-before(.//h3/a/@href, concat(substring('&', 1 div contains(.//h3/a/@href, 'profile.php')), substring('?', 1 div not(contains(.//h3/a/@href, 'profile.php')))))")
                 new.add_value('reply_to',response.meta['reply_to'])
                 new.add_xpath('text','.//div[h3]/div[1]//text()')
                 new.add_xpath('date','.//abbr/text()')
@@ -113,8 +113,8 @@ class CommentsSpider(FacebookSpider):
             #parse all comments
             for reply in response.xpath('//div[contains(@id,"root")]/div/div/div[count(@id)=1 and contains("0123456789", substring(@id,1,1))]'): 
                 new = ItemLoader(item=CommentsItem(),selector=reply)
-                new.context['lang'] = self.lang           
-                new.add_xpath('source', "substring-before(.//h3/a/@href,'?')")
+                new.context['lang'] = self.lang            
+                new.add_xpath('source', "substring-before(.//h3/a/@href, concat(substring('&', 1 div contains(.//h3/a/@href, 'profile.php')), substring('?', 1 div not(contains(.//h3/a/@href, 'profile.php')))))")
                 new.add_value('reply_to',response.meta['reply_to'])
                 new.add_xpath('text','.//div[h3]/div[1]//text()')
                 new.add_xpath('date','.//abbr/text()')

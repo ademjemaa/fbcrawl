@@ -32,7 +32,7 @@ class ReactionsSpider(FacebookSpider):
             self.logger.info('{} regular reaction @ page '.format(i+1))
             new = ItemLoader(item=ReactionsItem(),selector=reply)
             new.context['lang'] = self.lang
-            new.add_xpath('profile',".//a/@href")
+            new.add_xpath('profile',".//div/h3/a/@href")
             new.add_xpath('type',".//td[2]/img/@alt")        
             yield new.load_item()
             self.logger.info('item created ')
