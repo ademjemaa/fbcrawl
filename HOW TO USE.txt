@@ -11,6 +11,7 @@ scrapy crawl group -a email="" -a password="" -a page="" -a year="2015" -a lang=
 
 scrapy crawl profile -a email="" -a password="" -a page="" -o profile.csv 
 
+scrapy crawl members -a email="" -a password="" -a page="" -o members.csv
 
 
 avec page = url a passer (example = -a page="https://mbasic.facebook.com/mosaiquefm")

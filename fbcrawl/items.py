@@ -113,4 +113,6 @@ class ProfileItem(scrapy.Item):
     location = scrapy.Field()
     friends = scrapy.Field()
 
+class MembersItem(scrapy.Item):
+    profile = scrapy.Field()
     

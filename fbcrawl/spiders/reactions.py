@@ -27,7 +27,6 @@ class ReactionsSpider(FacebookSpider):
         yield scrapy.Request(reactions, callback=self.parse_reactions)
         
     def parse_reactions(self,response):
-        self.logger.info('crawling data')
         for i,reply in enumerate(response.xpath(".//li/table/tbody/tr/td/table")):
             self.logger.info('{} regular reaction @ page '.format(i+1))
             new = ItemLoader(item=ReactionsItem(),selector=reply)
@@ -35,7 +34,6 @@ class ReactionsSpider(FacebookSpider):
             new.add_xpath('profile',".//div/h3/a/@href")
             new.add_xpath('type',".//td[2]/img/@alt")        
             yield new.load_item()
-            self.logger.info('item created ')
         new_page = response.xpath("//li/table/tbody/tr/td/div/a/@href").extract()
         time.sleep(1)
         self.logger.info('finding new page ')
