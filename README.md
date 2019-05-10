@@ -30,6 +30,10 @@ THIS LIST WILL GROW AS I ENCOUNTER PROBLEMS OR NEED TO ADD FEATURES IN MY CRAWLE
 2)solutions/tips : look into "xpath substring-before"
 
 
+2)actual solution, concat with a contain (check comments / groups spider)
+
+
+
 3)to do: export all my items to a database instead of a CSV file
 
 3)potential problems of the above : the crawling might lead to hundred of thousands maybe even millions of input in my database, thus the database needs to be very well orgonised in order to function properly and efficiently, also the crawler might be faster be collecting data faster than the data is inserted in my database very further on in my project
