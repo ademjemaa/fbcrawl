@@ -115,4 +115,13 @@ class ProfileItem(scrapy.Item):
 
 class MembersItem(scrapy.Item):
     profile = scrapy.Field()
+
+class LinkItem(scrapy.Item):
+    profile = scrapy.Field()
+    post_url = scrapy.Field()
+    action = scrapy.Field()
+    url = scrapy.Field()
+    date = scrapy.Field()
+    
+    
     
