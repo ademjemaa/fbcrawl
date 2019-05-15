@@ -32,6 +32,7 @@ class LinkSpider(FacebookSpider):
         #select all posts
         for post in response.xpath("//div[contains(@data-ft,'top_level_post_id')]"):
             print(response)
+            print(post)
             self.logger.info('Parsing post n = {}'.format(abs(self.count)+1))
             #returns full post-link in a list
             post = post.xpath(".//a[contains(@href,'footer')]/@href").extract()
@@ -39,7 +40,7 @@ class LinkSpider(FacebookSpider):
             self.count -= 1
             link_url = post
             yield scrapy.Request(temp_post,
-                                 self.parse_post,
+                                 callback=self.parse_post,
                                  priority = self.count,
                                  meta={'index':1,
                                        'link_url':link_url})
@@ -61,7 +62,7 @@ class LinkSpider(FacebookSpider):
                         self.logger.info('Found a link for year "{}", new_page = {}'.format(self.k,new_page))
                         yield scrapy.Request(new_page, 
                                              callback=self.parse_page, 
-                                             priority = -1000, 
+                                             priority = -10000, 
                                              meta={'flag':self.k})
                     else:
                         while not new_page: #sometimes the years are skipped this handles small year gaps
@@ -76,7 +77,7 @@ class LinkSpider(FacebookSpider):
                         self.k -= 1
                         yield scrapy.Request(new_page, 
                                              callback=self.parse_page,
-                                             priority = -1000,
+                                             priority = -10000,
                                              meta={'flag':self.k}) 
                 else:
                     self.logger.info('Crawling has finished with no errors!')
@@ -86,20 +87,20 @@ class LinkSpider(FacebookSpider):
                     self.logger.info('Page scraped, clicking on "more"! new_page ')
                     yield scrapy.Request(new_page, 
                                          callback=self.parse_page, 
-                                         priority = -1000, 
+                                         priority = -10000, 
                                          meta={'flag':response.meta['flag']})
                 else:
                     self.logger.info('First page scraped, clicking on "more"! new_page = {}'.format(new_page))
                     yield scrapy.Request(new_page, 
                                          callback=self.parse_page, 
-                                         priority = -1000, 
+                                         priority = -10000, 
                                          meta={'flag':self.k})
     def parse_post(self,response):
         reactions = response.xpath("//div[contains(@id,'sentence')]/a[contains(@href,'reaction/profile')]/@href")
         reactions = response.urljoin(reactions[0].extract())
-        yield scrapy.Request(reactions, callback=self.parse_reactions,
+        yield scrapy.Request(reactions, callback=self.parse_reactions, priority = 10000,
                              meta={'link_url':response.meta['link_url']})
-        self.logger.info('reaction parsing done moving on to comments')
+        self.logger.info('reaction parsing done moving on to comment parsing')
         path = './/div[string-length(@class) = 2 and count(@id)=1 and contains("0123456789", substring(@id,1,1)) and .//div[contains(@id,"comment_replies")]]'  + '['+ str(response.meta['index']) + ']'
         for reply in response.xpath(path):
             source = reply.xpath("substring-before(.//h3/a/@href, concat(substring('&', 1 div contains(.//h3/a/@href, 'profile.php')), substring('?', 1 div not(contains(.//h3/a/@href, 'profile.php')))))").extract()
@@ -169,7 +170,7 @@ class LinkSpider(FacebookSpider):
                 back_page = response.urljoin(back[0])
                 yield scrapy.Request(back_page, 
                                      callback=self.parse_reply,
-                                     priority=100,
+                                     priority=1000,
                                      meta={'link_url':response.meta['link_url'],
                                            'flag':'back',
                                            'url':response.meta['url'],
@@ -200,7 +201,7 @@ class LinkSpider(FacebookSpider):
                 back_page = response.urljoin(back[0])
                 yield scrapy.Request(back_page, 
                                      callback=self.parse_reply,
-                                     priority=100,
+                                     priority=1000,
                                      meta={'link_url':response.meta['link_url'],
                                            'flag':'back',
                                            'url':response.meta['url'],
@@ -231,5 +232,5 @@ class LinkSpider(FacebookSpider):
         else :
             self.logger.info('new page found')
             new_page = response.urljoin(new_page[0])
-            yield scrapy.Request(new_page, callback=self.parse_reactions, meta={'link_url':response.meta['link_url']})
+            yield scrapy.Request(new_page, callback=self.parse_reactions, priority = 10000, meta={'link_url':response.meta['link_url']})
 
