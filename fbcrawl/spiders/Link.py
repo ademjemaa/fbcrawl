@@ -15,7 +15,7 @@ class LinkSpider(FacebookSpider):
     """    
     name = "link"
     custom_settings = {
-        'FEED_EXPORT_FIELDS': ['profile','post_url','action','url'],
+        'FEED_EXPORT_FIELDS': ['profile','post_url','action','url','date'],
         'DUPEFILTER_CLASS' : 'scrapy.dupefilters.BaseDupeFilter',
         'CONCURRENT_REQUESTS':1, 
     }
@@ -31,14 +31,12 @@ class LinkSpider(FacebookSpider):
 
         #select all posts
         for post in response.xpath("//div[contains(@data-ft,'top_level_post_id')]"):
-            print(response)
-            print(post)
             self.logger.info('Parsing post n = {}'.format(abs(self.count)+1))
             #returns full post-link in a list
             post = post.xpath(".//a[contains(@href,'footer')]/@href").extract()
             temp_post = response.urljoin(post[0])
             self.count -= 1
-            link_url = post
+            link_url = post[0].split("&refid")[0]
             yield scrapy.Request(temp_post,
                                  callback=self.parse_post,
                                  priority = self.count,
@@ -96,6 +94,7 @@ class LinkSpider(FacebookSpider):
                                          priority = -10000, 
                                          meta={'flag':self.k})
     def parse_post(self,response):
+        #selects all the reactions of the post of the previous spider
         reactions = response.xpath("//div[contains(@id,'sentence')]/a[contains(@href,'reaction/profile')]/@href")
         reactions = response.urljoin(reactions[0].extract())
         yield scrapy.Request(reactions, callback=self.parse_reactions, priority = 10000,
@@ -117,12 +116,12 @@ class LinkSpider(FacebookSpider):
         if not response.xpath(path):
             path2 = './/div[string-length(@class) = 2 and count(@id)=1 and contains("0123456789", substring(@id,1,1)) and not(.//div[contains(@id,"comment_replies")])]'
             for i,reply in enumerate(response.xpath(path2)):
-                self.logger.info('{} regular comment @ page {}'.format(i,response.url))
+                self.logger.info('{} regular comment @ post {}'.format(i,response.meta['link_url']))
                 new = ItemLoader(item=LinkItem(),selector=reply)
                 new.context['lang'] = self.lang
                 new.add_xpath('profile',"substring-before(.//h3/a/@href, concat(substring('&', 1 div contains(.//h3/a/@href, 'profile.php')), substring('?', 1 div not(contains(.//h3/a/@href, 'profile.php')))))")  
                 new.add_xpath('action','.//div[h3]/div[1]//text()')
-                #new.add_xpath('date','.//abbr/text()')
+                new.add_xpath('date','.//abbr/text()')
                 new.add_value('post_url',response.meta['link_url'])
                 new.add_value('url',response.url)
                 yield new.load_item()
@@ -149,7 +148,7 @@ class LinkSpider(FacebookSpider):
                 new.context['lang'] = self.lang
                 new.add_xpath('profile', "substring-before(.//h3/a/@href, concat(substring('&', 1 div contains(.//h3/a/@href, 'profile.php')), substring('?', 1 div not(contains(.//h3/a/@href, 'profile.php')))))")
                 new.add_xpath('action','.//div[1]//text()')
-                #new.add_xpath('date','.//abbr/text()')
+                new.add_xpath('date','.//abbr/text()')
                 new.add_value('post_url',response.meta['link_url'])
                 new.add_value('url',response.url)
                 yield new.load_item()
@@ -159,7 +158,7 @@ class LinkSpider(FacebookSpider):
                 new.context['lang'] = self.lang
                 new.add_xpath('profile', "substring-before(.//h3/a/@href, concat(substring('&', 1 div contains(.//h3/a/@href, 'profile.php')), substring('?', 1 div not(contains(.//h3/a/@href, 'profile.php')))))")
                 new.add_xpath('action','.//div[h3]/div[1]//text()')
-                #new.add_xpath('date','.//abbr/text()')
+                new.add_xpath('date','.//abbr/text()')
                 new.add_value('post_url',response.meta['link_url'])
                 new.add_value('url',response.url)   
                 yield new.load_item()
@@ -191,7 +190,7 @@ class LinkSpider(FacebookSpider):
                 new.add_xpath('profile', "substring-before(.//h3/a/@href, concat(substring('&', 1 div contains(.//h3/a/@href, 'profile.php')), substring('?', 1 div not(contains(.//h3/a/@href, 'profile.php')))))")
                 new.add_value('post_url',response.meta['link_url'])
                 new.add_xpath('action','.//div[h3]/div[1]//text()')
-                #new.add_xpath('date','.//abbr/text()')
+                new.add_xpath('date','.//abbr/text()')
                 new.add_value('url',response.url)   
                 yield new.load_item()
             #keep going backwards
@@ -215,8 +214,9 @@ class LinkSpider(FacebookSpider):
         
    
     def parse_reactions(self,response):
+        #selects all reactions of a given post
+        self.logger.info('parsing reactions of post : {}'.format(response.meta['link_url']))
         for i,reply in enumerate(response.xpath(".//li/table/tbody/tr/td/table")):
-            self.logger.info('{} regular reaction @ page '.format(i+1))
             new = ItemLoader(item=LinkItem(),selector=reply)
             new.context['lang'] = self.lang
             new.add_xpath('profile',".//div/h3/a/@href")
@@ -224,13 +224,14 @@ class LinkSpider(FacebookSpider):
             new.add_value('url',response.url)
             new.add_value('post_url',response.meta['link_url'])
             yield new.load_item()
+        #finds new reactions to crawl
         new_page = response.xpath("//li/table/tbody/tr/td/div/a/@href").extract()
         time.sleep(1)
-        self.logger.info('finding new page ')
+        self.logger.info('finding more reactions')
         if not new_page :
             self.logger.info('no more reactions to fetch')
         else :
-            self.logger.info('new page found')
+            self.logger.info('more reactions found')
             new_page = response.urljoin(new_page[0])
             yield scrapy.Request(new_page, callback=self.parse_reactions, priority = 10000, meta={'link_url':response.meta['link_url']})
 

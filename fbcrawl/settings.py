@@ -66,6 +66,11 @@ DOWNLOAD_DELAY = 1
 #ITEM_PIPELINES = {
 #    'fbcrawl.pipelines.FbcrawlPipeline': 300,
 #}
+"""
+ITEM_PIPELINES = {
+    'fbcrawl.pipelines.LinkPipeline': 300
+}
+"""
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
@@ -90,7 +95,7 @@ DOWNLOAD_DELAY = 1
 #FEED_EXPORT_FIELDS = ["source", "date", "text", "reactions","likes","ahah","love","wow","sigh","grrr","comments","url"] # specifies the order of the column to export as CSV
 FEED_EXPORT_ENCODING = 'utf-8'
 DUPEFILTER_DEBUG = True
-LOG_LEVEL = 'INFO'
-#LOG_LEVEL = 'DEBUG'
+#LOG_LEVEL = 'INFO'
+LOG_LEVEL = 'DEBUG'
 URLLENGTH_LIMIT = (999999999)
 

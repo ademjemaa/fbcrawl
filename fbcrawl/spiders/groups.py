@@ -36,7 +36,7 @@ class GroupPosts(FacebookSpider):
             post = post.xpath(".//a[contains(@href,'footer')]/@href").extract() 
             temp_post = response.urljoin(post[0])
             self.count -= 1
-            yield scrapy.Request(temp_post, self.parse_post, priority = self.count, meta={'item':new})       
+            yield scrapy.Request(temp_post, self.parse_post, priority = 1000, meta={'item':new})       
 
         #load following page
         #tries to click on "more"

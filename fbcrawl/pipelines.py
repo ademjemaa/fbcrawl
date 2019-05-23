@@ -5,14 +5,47 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
-from scrapy.exceptions import DropItem
-from datetime import datetime
+"""
+import mysql.connector
+from mysql.connector import errorcode
 
-class FbcrawlPipeline(object):
-    def process_item(self, item, spider):
-        if item['date'] < datetime(2017,1,1).date():
-            raise DropItem("Dropping element because it's older than 01/01/2017")
-        elif item['date'] > datetime(2018,3,4).date():
-            raise DropItem("Dropping element because it's newer than 04/03/2018")
-        else:
-            return item
+
+
+class LinkPipeline(object):
+
+    def _init_(self):
+        self.create_connection()
+        self.create_table()
+
+    def create_connection(self):
+        self.conn = mysql.connector.connect(
+            host = 'localhost',
+            user = 'root',
+            passwd = 'facebook123',
+            database = 'link'
+        )
+        self.curr = self.conn.cursor()
+
+    def create_table(self):
+        self.curr.execute("""#DROP TABLE IF EXISTS link_tb""")
+        #self.curr.execute("""create table link_tb(
+                        """profile text,
+                        post_url text,
+                        action text,
+                        url text,
+                        date text
+                        )""")
+    """
+    def process_item(self,item, spider):
+        self.store_db(item)
+        return(item)
+
+    def store_db(self, item):
+        self.curr.execute("""#insert into link_tb values (%s,%s,%s,%s,%s)""", (
+            """item['profile'][0],
+            item['post_url'][0],
+            item['action'][0],
+            item['url'][0],
+            item['date'][0]
+        ))
+        self.conn.commit()
