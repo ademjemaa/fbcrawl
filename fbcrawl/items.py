@@ -122,6 +122,7 @@ class LinkItem(scrapy.Item):
     action = scrapy.Field()
     url = scrapy.Field()
     date = scrapy.Field()
+    page = scrapy.Field()
     
     
     

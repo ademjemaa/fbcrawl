@@ -14,6 +14,9 @@ class GroupPosts(FacebookSpider):
                                'sigh','grrr','comments','url'],
         'CONCURRENT_REQUESTS':1,
         'DUPEFILTER_CLASS' : 'scrapy.dupefilters.BaseDupeFilter',
+        'ITEM_PIPELINES':{
+            'fbcrawl.pipelines.GroupPipeline':400
+            }
 
     }
 
@@ -30,7 +33,7 @@ class GroupPosts(FacebookSpider):
             new = ItemLoader(item=FbcrawlItem(),selector=post)
             self.logger.info('Parsing post n = {}'.format(abs(self.count)))
             new.add_xpath('comments', "./div[2]/div[2]/a[1]/text()")        
-            new.add_xpath('url', ".//a[contains(@href,'footer')]/@href")
+
 
             #returns full post-link in a list
             post = post.xpath(".//a[contains(@href,'footer')]/@href").extract() 
@@ -55,7 +58,8 @@ class GroupPosts(FacebookSpider):
         new.add_xpath('shared_from','//div[contains(@data-ft,"top_level_post_id") and contains(@data-ft,\'"isShare":1\')]/div/div[3]//strong/a/text()')
         new.add_xpath('date','//div/div/abbr/text()')
         new.add_xpath('text','//div[@data-ft]//p//text() | //div[@data-ft]/div[@class]/div[@class]/text()')
-        new.add_xpath('reactions',"//a[contains(@href,'reaction/profile')]/div/div/text()")  
+        new.add_xpath('reactions',"//a[contains(@href,'reaction/profile')]/div/div/text()")
+        new.add_value('url',response.url)
         
         reactions = response.xpath("//div[contains(@id,'sentence')]/a[contains(@href,'reaction/profile')]/@href")
         reactions = response.urljoin(reactions[0].extract())

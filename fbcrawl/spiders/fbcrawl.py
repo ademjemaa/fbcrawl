@@ -13,7 +13,10 @@ class FacebookSpider(scrapy.Spider):
     custom_settings = {
         'FEED_EXPORT_FIELDS': ['source','shared_from','date','text', \
                                'reactions','likes','ahah','love','wow', \
-                               'sigh','grrr','comments','url']
+                               'sigh','grrr','comments','url'],
+        'ITEM_PIPELINES':{
+            'fbcrawl.pipelines.FbcrawlPipeline':300
+            }
     }
     
     def __init__(self, *args, **kwargs):

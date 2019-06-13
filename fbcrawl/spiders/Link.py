@@ -15,9 +15,12 @@ class LinkSpider(FacebookSpider):
     """    
     name = "link"
     custom_settings = {
-        'FEED_EXPORT_FIELDS': ['profile','post_url','action','url','date'],
+        'FEED_EXPORT_FIELDS': ['profile','post_url','action','url','date','page'],
         'DUPEFILTER_CLASS' : 'scrapy.dupefilters.BaseDupeFilter',
-        'CONCURRENT_REQUESTS':1, 
+        'CONCURRENT_REQUESTS':1,
+        'ITEM_PIPELINES':{
+            'fbcrawl.pipelines.LinkPipeline': 300
+            },
     }
 
     def __init__(self, *args, **kwargs):
@@ -28,7 +31,7 @@ class LinkSpider(FacebookSpider):
         Parse the given page selecting the posts.
         Then ask recursively for another page.
         '''
-
+        page_url = str(response.url)
         #select all posts
         for post in response.xpath("//div[contains(@data-ft,'top_level_post_id')]"):
             self.logger.info('Parsing post n = {}'.format(abs(self.count)+1))
@@ -41,7 +44,8 @@ class LinkSpider(FacebookSpider):
                                  callback=self.parse_post,
                                  priority = self.count,
                                  meta={'index':1,
-                                       'link_url':link_url})
+                                       'link_url':link_url,
+                                       'page_url':page_url})
     
             #load following page, try to click on "more"
             #after few pages have been scraped, the "more" link might disappears 
@@ -98,7 +102,8 @@ class LinkSpider(FacebookSpider):
         reactions = response.xpath("//div[contains(@id,'sentence')]/a[contains(@href,'reaction/profile')]/@href")
         reactions = response.urljoin(reactions[0].extract())
         yield scrapy.Request(reactions, callback=self.parse_reactions, priority = 10000,
-                             meta={'link_url':response.meta['link_url']})
+                             meta={'link_url':response.meta['link_url'],
+                                   'page_url':response.meta['page_url']})
         self.logger.info('reaction parsing done moving on to comment parsing')
         path = './/div[string-length(@class) = 2 and count(@id)=1 and contains("0123456789", substring(@id,1,1)) and .//div[contains(@id,"comment_replies")]]'  + '['+ str(response.meta['index']) + ']'
         for reply in response.xpath(path):
@@ -111,6 +116,7 @@ class LinkSpider(FacebookSpider):
                                  meta={'url':response.url,
                                        'index':response.meta['index'],
                                        'link_url':response.meta['link_url'],
+                                       'page_url':response.meta['page_url'],
                                        'flag':'init'})
         #loads regular comments     
         if not response.xpath(path):
@@ -135,7 +141,8 @@ class LinkSpider(FacebookSpider):
                 yield scrapy.Request(new_page,
                                      callback=self.parse_page,
                                      meta={'index':1,
-                                           'link_url':response.meta['link_url']})        
+                                           'link_url':response.meta['link_url'],
+                                           'page_url':response.meta['page_url']})        
         
     def parse_reply(self,response):
         '''
@@ -173,14 +180,16 @@ class LinkSpider(FacebookSpider):
                                      meta={'link_url':response.meta['link_url'],
                                            'flag':'back',
                                            'url':response.meta['url'],
-                                           'index':response.meta['index']})
+                                           'index':response.meta['index'],
+                                           'page_url':response.meta['page_url']})
             else:
                 next_reply = response.meta['url']
                 self.logger.info('Nested comments crawl finished, heading to proper page: {}'.format(response.meta['url']))
                 yield scrapy.Request(next_reply,
                                      callback=self.parse_page,
                                      meta={'index':response.meta['index']+1,
-                                           'link_url':response.meta['link_url']})
+                                           'link_url':response.meta['link_url'],
+                                           'page_url':response.meta['page_url']})
                 
         elif response.meta['flag'] == 'back':
             #parse all comments
@@ -204,7 +213,8 @@ class LinkSpider(FacebookSpider):
                                      meta={'link_url':response.meta['link_url'],
                                            'flag':'back',
                                            'url':response.meta['url'],
-                                           'index':response.meta['index']})
+                                           'index':response.meta['index'],
+                                           'page_url':response.meta['page_url']})
             else:
                 next_reply = response.meta['url']
                 self.logger.info('Nested comments crawl finished, heading to home page: {}'.format(response.meta['url']))
@@ -223,6 +233,7 @@ class LinkSpider(FacebookSpider):
             new.add_xpath('action',".//td[2]/img/@alt")
             new.add_value('url',response.url)
             new.add_value('post_url',response.meta['link_url'])
+            new.add_value('date','0')
             yield new.load_item()
         #finds new reactions to crawl
         new_page = response.xpath("//li/table/tbody/tr/td/div/a/@href").extract()
@@ -233,5 +244,6 @@ class LinkSpider(FacebookSpider):
         else :
             self.logger.info('more reactions found')
             new_page = response.urljoin(new_page[0])
-            yield scrapy.Request(new_page, callback=self.parse_reactions, priority = 10000, meta={'link_url':response.meta['link_url']})
+            yield scrapy.Request(new_page, callback=self.parse_reactions, priority = 10000, meta={'link_url':response.meta['link_url'],
+                                                                                                  'page_url':response.meta['page_url']})
 

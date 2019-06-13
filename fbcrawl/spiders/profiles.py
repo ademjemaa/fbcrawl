@@ -15,6 +15,9 @@ class ProfileSpider(FacebookSpider):
         'FEED_EXPORT_FIELDS' : ['name','birth','url','location','friends'],
         'DUPEFILTER_CLASS' : 'scrapy.dupefilters.BaseDupeFilter',
         'CONCURRENT_REQUESTS':1,
+        'ITEM_PIPELINES':{
+            'fbcrawl.pipelines.ProfilePipeline':300
+            }
 
     }
 

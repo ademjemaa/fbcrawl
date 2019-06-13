@@ -14,7 +14,11 @@ class CommentsSpider(FacebookSpider):
         'FEED_EXPORT_FIELDS': ['source','reply_to','date','reactions','text', \
                                'url'],
         'DUPEFILTER_CLASS' : 'scrapy.dupefilters.BaseDupeFilter',
-        'CONCURRENT_REQUESTS':1, 
+        'CONCURRENT_REQUESTS':1,
+        'ITEM_PIPELINES':{
+            'fbcrawl.pipelines.CommentsPipeline': 300
+            },
+        
     }
 
     def __init__(self, *args, **kwargs):

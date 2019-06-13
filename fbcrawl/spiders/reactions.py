@@ -16,6 +16,9 @@ class ReactionsSpider(FacebookSpider):
         'FEED_EXPORT_FIELDS': ['profile','type'],
         'DUPEFILTER_CLASS' : 'scrapy.dupefilters.BaseDupeFilter',
         'CONCURRENT_REQUESTS':1,
+        'ITEM_PIPELINES':{
+            'fbcrawl.pipelines.ReactionsPipeline':300
+            }
     }
 
     def __init__(self, *args, **kwargs):

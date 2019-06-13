@@ -16,6 +16,9 @@ class MembersSpider(FacebookSpider):
         'FEED_EXPORT_FIELDS': ['profile'],
         'DUPEFILTER_CLASS' : 'scrapy.dupefilters.BaseDupeFilter',
         'CONCURRENT_REQUESTS':1,
+        'ITEM_PIPELINES':{
+            'fbcrawl.pipelines.MembersPipeline':300
+            }
     }
 
     def __init__(self, *args, **kwargs):
